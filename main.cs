@@ -169,6 +169,8 @@ namespace program
 
 		private static coord[] getAllMoves()
 		{
+			//The list containing valid moves
+			List<coord> valid = new List<coord>();
 			//The array to contain the "enemy" pieces to simplify code
 			char[] enemies;
 			//The current piece's character (ie. type)
@@ -182,7 +184,6 @@ namespace program
 			{
 				enemies = chess.whitePieces;
 			}
-			coord[] moves;
 			//Pawns
 			if (Char.ToLower(pieceChar) == 'p')
 			{
@@ -205,18 +206,25 @@ namespace program
 					left = new coord(piecePos.x+1, aheadY);
 					right = new coord(piecePos.x-1, aheadY);
 				}
-				coord[] toCheck = {ahead, left, right};
-				List<coord> valid = new List<coord>();
-				//Run through all the marked coords and check if the pawn can move there/take there
-				foreach (coord current in toCheck)
+				//Check if ahead is clear
+				if (ahead.getPiece() == ' ')
 				{
-					if (current.getPiece() == ' ' || enemies.Contains(current.getPiece()))
-					{
-						valid.Add(current);
-					}
+					valid.Add(ahead);
 				}
-				moves = valid.ToArray();
+				//Check if sides are occupied by enemies
+				//Left
+				if (enemies.Contains(left.getPiece()))
+				{
+					valid.Add(left);
+				}
+				//Right
+				if (enemies.Contains(right.getPiece()))
+				{
+					valid.Add(right);
+				}
 			}
+			else
+			{
 			switch (Char.ToLower(pieceChar)){
 				case 'r':
 					//Rooks
@@ -233,8 +241,12 @@ namespace program
 				case 'k':
 					//Kings
 					break;
+				default:
+					//This shouldn't happen, I'm just doing this to satisfy the compiler about the moves variable
+					throw new Exception();
 			}
-			return moves;
+			}
+			return valid.ToArray();
 		}
 	}
 }

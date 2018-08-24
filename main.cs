@@ -42,7 +42,7 @@ namespace program
 
 		static void setDefaultBoard(bool black)
 		{
-			//Manually set the default starting section, needs to be replace with unicode chars for chess pieces if at all possible
+			//Manually set the default starting section
 			board = new char[8,8] {
 				{'r','n','b','q','k','b','n','r'},
 				{'p','p','p','p','p','p','p','p'},
@@ -68,6 +68,7 @@ namespace program
 			}
 		}
 
+		//Print the board line by line, adding axes and coordinate labelling
 		public static void printBoard()
 		{
 			for (int y=0; y<8; y++)
@@ -85,6 +86,8 @@ namespace program
 			Console.WriteLine("  A B C D E F G H");
 		}
 
+		//The command prompt
+		//Only has getMove for now but should be easy to add commands
 		static void commandPrompt()
 		{
 			Console.Write(">");
@@ -101,6 +104,8 @@ namespace program
 		}
 	}
 
+	//As it say, the moving engine.
+	//The class structure in here needs changing to contain all the chess related stuff in a single static class (with nested classes?) and all the actual user interaction in another for easy use in libraries (as if that'll ever happen, haha)
 	static class movingEngine
 	{     
 		private struct coord
@@ -134,16 +139,20 @@ namespace program
 		{
 			while (true)
 			{
+				//Clear the console and prompt the user
 				Console.Clear();
 				chess.printBoard();
+				Console.WriteLine();
 				Console.Write("Enter the coordinates of the piece you want the moves for:");
 				string coords = Console.ReadLine().ToUpper();
 				piecePos = new coord();
+				//Check the y coordinate is valid
 				if (!Int32.TryParse(Convert.ToString(coords[1]), out piecePos.y))
 				{
 					Console.WriteLine("Bad coordinate formatting!");
 					continue;
 				}
+				//Convert the x letter to a coordinate for use in the board array; this is a horrendous method of doing this and needs changing
 				char[,] convertArray = {{'A','B','C','D','E','F','G','H'},{'1','2','3','4','5','6','7','8'}};
 				bool found = false;
 				for (int i=0; i<8; i++)
@@ -160,16 +169,18 @@ namespace program
 					Console.WriteLine("Bad coordinate formatting");
 					continue;
 				}
-				piecePos.x -= 1;
-				piecePos.y -= 1;
+				//Decrement for 0-based arrays
+				piecePos.x--;
+				piecePos.y--;
 				coord[] moves = getAllMoves();
 				//Print the moves
 			}
 		}
 
+		//Return a list of all the coordinates that a piece could move to, including taking
 		private static coord[] getAllMoves()
 		{
-			//The list containing valid moves
+			//The list containing valid moves that the piece can make
 			List<coord> valid = new List<coord>();
 			//The array to contain the "enemy" pieces to simplify code
 			char[] enemies;
@@ -184,6 +195,7 @@ namespace program
 			{
 				enemies = chess.whitePieces;
 			}
+
 			//Pawns
 			if (Char.ToLower(pieceChar) == 'p')
 			{

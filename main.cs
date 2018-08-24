@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 namespace program 
 {
 	class chess 
 	{
 		public static char[,] board;
 		public static bool black;
+
+		public static char[] whitePieces = {'P','R','N','B','Q','K'};
+		public static char[] blackPieces = {'p','r','n','b','q','k'};
 
 		static void Main()
 		{
@@ -65,11 +70,11 @@ namespace program
 
 		public static void printBoard()
 		{
-			for (int x=0; x<8; x++)
+			for (int y=0; y<8; y++)
 			{
-				Console.Write(8-x);
+				Console.Write(8-y);
 				Console.Write("| ");
-				for (int y=0; y<8; y++)
+				for (int x=0; y<8; y++)
 				{
 					Console.Write(board[x,y]);
 					Console.Write(" ");
@@ -97,8 +102,34 @@ namespace program
 	}
 
 	static class movingEngine
-	{
-		private static List<int[]> movesList;
+	{     
+		private struct coord
+		{
+			public int x;
+			public int y;
+
+			//Constructor to initialize with coordinates already present
+			public coord(int newX, int newY)
+			{
+				x = newX;
+				y = newY;
+			}
+			//Return the character representing the piece currently on the coordinate; returns I if the coordinate is invalid
+			public char getPiece()
+			{
+				//Check if the coordinate is valid
+				if (x>7 || y>7 || x<0 || y<0)
+				{
+					return 'I';
+				}
+				else
+				{
+					return chess.board[x,y];
+				}
+			}
+		}
+
+		private static coord piecePos;
 		public static void getMove()
 		{
 			while (true)
@@ -107,9 +138,8 @@ namespace program
 				chess.printBoard();
 				Console.Write("Enter the coordinates of the piece you want the moves for:");
 				string coords = Console.ReadLine().ToUpper();
-				int x = 0;
-				int y = 0;
-				if (!Int32.TryParse(Convert.ToString(coords[1]), out y))
+				piecePos = new coord();
+				if (!Int32.TryParse(Convert.ToString(coords[1]), out piecePos.y))
 				{
 					Console.WriteLine("Bad coordinate formatting!");
 					continue;
@@ -120,7 +150,7 @@ namespace program
 				{
 					if (coords[0] == convertArray[0,i])
 					{
-						x = Convert.ToInt32(convertArray[1,i]);
+						piecePos.x = Convert.ToInt32(convertArray[1,i]);
 						found = true;
 						break;
 					}
@@ -130,140 +160,81 @@ namespace program
 					Console.WriteLine("Bad coordinate formatting");
 					continue;
 				}
-				x -= 1;
-				y -= 1;
-				int[,] moves = getAllMoves(x, y);
+				piecePos.x -= 1;
+				piecePos.y -= 1;
+				coord[] moves = getAllMoves();
 				//Print the moves
 			}
 		}
 
-		public static int[,] getAllMoves(int x, int y)
+		private static coord[] getAllMoves()
 		{
-			char pieceChar = chess.board[x,y];
+			//The array to contain the "enemy" pieces to simplify code
+			char[] enemies;
+			//The current piece's character (ie. type)
+			char pieceChar = piecePos.getPiece();
+			//Set the correct set of enemies
+			if (chess.whitePieces.Contains(pieceChar))
+			{
+				enemies = chess.blackPieces;
+			}
+			else
+			{
+				enemies = chess.whitePieces;
+			}
+			coord[] moves;
+			//Pawns
 			if (Char.ToLower(pieceChar) == 'p')
 			{
+				coord ahead;
+				coord left;
+				coord right;
 				if ((chess.black && pieceChar == 'p') || (!chess.black && pieceChar == 'P'))
 				{
-					upPawn(x,y);
+					//Pawn moving up
+					int aheadY = piecePos.y+1;
+					ahead = new coord(piecePos.x, aheadY);
+					left = new coord(piecePos.x+1, aheadY);
+					right = new coord(piecePos.x-1, aheadY);
 				}
 				else
 				{
-					downPawn(x,y);
+					//Pawn moving down
+					int aheadY = piecePos.y-1;
+					ahead = new coord(piecePos.x, aheadY);
+					left = new coord(piecePos.x+1, aheadY);
+					right = new coord(piecePos.x-1, aheadY);
 				}
+				coord[] toCheck = {ahead, left, right};
+				List<coord> valid = new List<coord>();
+				//Run through all the marked coords and check if the pawn can move there/take there
+				foreach (coord current in toCheck)
+				{
+					if (current.getPiece() == ' ' || enemies.Contains(current.getPiece()))
+					{
+						valid.Add(current);
+					}
+				}
+				moves = valid.ToArray();
 			}
 			switch (Char.ToLower(pieceChar)){
 				case 'r':
-					rook(x,y);
+					//Rooks
 					break;
 				case 'n':
-					knight(x,y);
+					//Knights
 					break;
 				case 'b':
-					bishop(x,y);
+					//Bishops
 					break;
 				case 'q':
-					queen(x,y);
+					//Queens
 					break;
 				case 'k':
-					king(x,y);
+					//Kings
 					break;
 			}
-
-			//Code to return a list of the movesList stored as a 2D array?
-		}
-
-		private static void upPawn(int x, int y)
-		{
-
-		}
-
-		private static void downPawn(int x, int y)
-		{
-
-		}
-
-		private static void rook(int x, int y)
-		{
-			//A temporary array to store the current valid move because I've forgotten how to assign whole arrays in c#
-			int[] currentMove = new int[2];
-			//Checking all the tiles "east" of the rook
-			for (int i=x+1; i<8; i++)
-			{
-				if (chess.board[y,i] == ' ')
-				{
-					currentMove[0] = y;
-					currentMove[1] = i;
-					movesList.Add(currentMove);
-				}
-				else
-				{
-					break;
-				}
-			}
-			//Checking all the tiles "south" of the rook
-			for (int i=y+1; i<8; i++)
-			{
-				if (chess.board[i,x] == ' ')
-				{
-					currentMove[0] = i;
-					currentMove[1] = x;
-					movesList.Add(currentMove);
-				}
-				else
-				{
-					break;
-				}
-			}
-			//Checking all the tiles "north" of the rook
-			for (int i=y-1; i>-1; i--)
-			{
-				if (chess.board[i,x] == ' ')
-				{
-					currentMove[0] = i;
-					currentMove[1] = x;
-					movesList.Add(currentMove);
-				}
-				else
-				{
-					break;
-				}
-			}
-			//Checking all the tiles "west" of the rook
-			for (int i=x-1; i>-1; i++)
-			{
-				if (chess.board[y,i] == ' ')
-				{
-					currentMove[0] = y;
-					currentMove[1] = i;
-					movesList.Add(currentMove);
-				}
-				else
-				{
-					break;
-				}
-			}
-			//Done!
-			
-		}
-
-		private static void knight(int x, int y)
-		{
-
-		}
-
-		private static void bishop(int x, int y)
-		{
-
-		}
-
-		private static void queen(int x, int y)
-		{
-
-		}
-
-		private static void king(int x, int y)
-		{
-
+			return moves;
 		}
 	}
 }

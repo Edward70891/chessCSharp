@@ -231,6 +231,16 @@ namespace program
 					break;
 				case 'n':
 					//Knights
+					//Define the array of moves knights can make
+					coord[] knightMoves = {new coord(piecePos.x-2,piecePos.x-1),new coord(piecePos.x-1,piecePos.y-2),new coord(piecePos.x+2,piecePos.y-1),new coord(piecePos.x+1,piecePos.y-2),new coord(piecePos.x+2,piecePos.y+1),new coord(piecePos.x+1,piecePos.y+2),new coord(piecePos.x-2,piecePos.y+1),new coord(piecePos.x-1,piecePos.y+2)};
+					//Check them all for free spaces and enemies
+					foreach (coord current in knightMoves)
+					{
+						if (current.getPiece() == ' ' || enemies.Contains(current.getPiece()))
+						{
+							valid.Add(current);
+						}
+					}
 					break;
 				case 'b':
 					//Bishops
@@ -241,10 +251,7 @@ namespace program
 				case 'k':
 					//Kings
 					break;
-				default:
-					//This shouldn't happen, I'm just doing this to satisfy the compiler about the moves variable
-					throw new Exception();
-			}
+				}
 			}
 			return valid.ToArray();
 		}

@@ -11,7 +11,7 @@ namespace chess
 		public char[,] board;
 		public team attacker;
 
-		public struct coord
+		public struct coord : IEquatable<coord>
 		{
 			public int x;
 			public int y;
@@ -33,6 +33,18 @@ namespace chess
 				else
 				{
 					return target.board[x,y];
+				}
+			}
+
+			public bool Equals(coord comparison)
+			{
+				if (x == comparison.x && y == comparison.y)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
 				}
 			}
 		}
@@ -124,7 +136,7 @@ namespace chess
 			//Combine two movesets, this is here basically for the sake of the queen
 			public moveset(moveset a, moveset b)
 			{
-				if (!(a.target.x == b.target.x && a.target.y == b.target.y))
+				if (!(a.Equals(b)))
 				{
 					throw new Exception("The targets do not match!");
 				}

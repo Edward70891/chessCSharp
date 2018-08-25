@@ -1,2 +1,3 @@
 # chessCSharp
-A really, really terrible chess thingy written in C# using mono
+A chess thingy written in C#.
+Requires mono on linux.

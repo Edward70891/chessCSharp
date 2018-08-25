@@ -73,7 +73,7 @@ namespace chess
 		}
 	}
 
-	class movingEngine
+	public class movingEngine
 	{
 		private game toAnalyze;
 

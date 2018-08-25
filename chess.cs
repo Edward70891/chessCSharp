@@ -11,6 +11,32 @@ namespace chess
 		public char[,] board;
 		public team attacker;
 
+		public struct coord
+		{
+			public int x;
+			public int y;
+
+			//Constructor to initialize with coordinates already present
+			public coord(int newX, int newY)
+			{
+				x = newX;
+				y = newY;
+			}
+			//Return the character representing the piece currently on the coordinate; returns I if the coordinate is invalid
+			public char getPiece(game target)
+			{
+				//Check if the coordinate is valid
+				if (x>7 || y>7 || x<0 || y<0)
+				{
+					return 'I';
+				}
+				else
+				{
+					return target.board[x,y];
+				}
+			}
+		}
+
 		private static char[,] defaultWhite = new char[8,8];
 		private static char[,] defaultBlack = new char[8,8];
 
@@ -82,39 +108,15 @@ namespace chess
 			toAnalyze=target;
 		}
 
-		public struct coord
-		{
-			public int x;
-			public int y;
+		
 
-			//Constructor to initialize with coordinates already present
-			public coord(int newX, int newY)
-			{
-				x = newX;
-				y = newY;
-			}
-			//Return the character representing the piece currently on the coordinate; returns I if the coordinate is invalid
-			public char getPiece(game target)
-			{
-				//Check if the coordinate is valid
-				if (x>7 || y>7 || x<0 || y<0)
-				{
-					return 'I';
-				}
-				else
-				{
-					return target.board[x,y];
-				}
-			}
-		}
-
-		private coord piecePos;
+		private game.coord piecePos;
 		
 		//Return a list of all the coordinates that a single piece could move to, including taking
-		public coord[] getAllMoves()
+		public game.coord[] getAllMoves()
 		{
 			//The list containing valid moves that the piece can make
-			List<coord> valid = new List<coord>();
+			List<game.coord> valid = new List<game.coord>();
 			//The array to contain the "enemy" pieces to simplify code
 			char[] enemies;
 			//The current piece's character (ie. type)
@@ -132,24 +134,24 @@ namespace chess
 			//Pawns
 			if (Char.ToLower(pieceChar) == game.blackPieces[0])
 			{
-				coord ahead;
-				coord left;
-				coord right;
+				game.coord ahead;
+				game.coord left;
+				game.coord right;
 				if ((toAnalyze.attacker == team.black && pieceChar == 'p') || (!(toAnalyze.attacker == team.white) && pieceChar == 'P'))
 				{
 					//Pawn moving up
 					int aheadY = piecePos.y+1;
-					ahead = new coord(piecePos.x, aheadY);
-					left = new coord(piecePos.x+1, aheadY);
-					right = new coord(piecePos.x-1, aheadY);
+					ahead = new game.coord(piecePos.x, aheadY);
+					left = new game.coord(piecePos.x+1, aheadY);
+					right = new game.coord(piecePos.x-1, aheadY);
 				}
 				else
 				{
 					//Pawn moving down
 					int aheadY = piecePos.y-1;
-					ahead = new coord(piecePos.x, aheadY);
-					left = new coord(piecePos.x+1, aheadY);
-					right = new coord(piecePos.x-1, aheadY);
+					ahead = new game.coord(piecePos.x, aheadY);
+					left = new game.coord(piecePos.x+1, aheadY);
+					right = new game.coord(piecePos.x-1, aheadY);
 				}
 				//Check if ahead is clear
 				if (ahead.getPiece(toAnalyze) == ' ')
@@ -177,9 +179,22 @@ namespace chess
 				case 'n':
 					//Knights
 					//Define the array of moves knights can make
-					coord[] knightMoves = {new coord(piecePos.x-2,piecePos.x-1),new coord(piecePos.x-1,piecePos.y-2),new coord(piecePos.x+2,piecePos.y-1),new coord(piecePos.x+1,piecePos.y-2),new coord(piecePos.x+2,piecePos.y+1),new coord(piecePos.x+1,piecePos.y+2),new coord(piecePos.x-2,piecePos.y+1),new coord(piecePos.x-1,piecePos.y+2)};
+					game.coord[] knightMoves = {
+						//Bottom left
+						new game.coord(piecePos.x-2,piecePos.x-1),
+						new game.coord(piecePos.x-1,piecePos.y-2),
+						//Bottom right
+						new game.coord(piecePos.x+2,piecePos.y-1),
+						new game.coord(piecePos.x+1,piecePos.y-2),
+						//Top right
+						new game.coord(piecePos.x+2,piecePos.y+1),
+						new game.coord(piecePos.x+1,piecePos.y+2),
+						//Top left
+						new game.coord(piecePos.x-2,piecePos.y+1),
+						new game.coord(piecePos.x-1,piecePos.y+2)
+					};
 					//Check them all for free spaces and enemies
-					foreach (coord current in knightMoves)
+					foreach (game.coord current in knightMoves)
 					{
 						if (current.getPiece(toAnalyze) == ' ' || enemies.Contains(current.getPiece(toAnalyze)))
 						{

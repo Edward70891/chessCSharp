@@ -173,10 +173,10 @@ namespace chess
 			else
 			{
 			switch (Char.ToLower(pieceChar)){
-				case 'r':
+				case game.blackPieces[1]:
 					//Rooks
 					break;
-				case 'n':
+				case game.blackPieces[2]:
 					//Knights
 					//Define the array of moves knights can make
 					game.coord[] knightMoves = {
@@ -202,13 +202,13 @@ namespace chess
 						}
 					}
 					break;
-				case 'b':
+				case game.blackPieces[3]:
 					//Bishops
 					break;
-				case 'q':
+				case game.blackPieces[4]:
 					//Queens
 					break;
-				case 'k':
+				case game.blackPieces[5]:
 					//Kings
 					break;
 				}

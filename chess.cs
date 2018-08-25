@@ -108,15 +108,72 @@ namespace chess
 			toAnalyze=target;
 		}
 
-		
+		public struct moveset
+		{
+			public game.coord target{get;}
+			public game.coord[] passiveMoves{get;}
+			public game.coord[] activeMoves{get;}
+
+			//Make a new moveset from a target and two lists of moves
+			public moveset(game.coord pieceTarget, game.coord[] nonTaking, game.coord[] taking)
+			{
+				activeMoves = taking;
+				passiveMoves = nonTaking;
+				target = pieceTarget;
+			}
+			//Combine two movesets, this is here basically for the sake of the queen
+			public moveset(moveset a, moveset b)
+			{
+				if (!(a.target.x == b.target.x && a.target.y == b.target.y))
+				{
+					throw new Exception("The targets do not match!");
+				}
+				target = a.target;
+				//Define new lists to concatenate arrays
+				List<game.coord> validPass = new List<game.coord>();
+				List<game.coord> validActi = new List<game.coord>();
+				
+				//Add the contents of a to each array
+				foreach (game.coord current in a.passiveMoves)
+				{
+					validPass.Add(current);
+				}
+				foreach (game.coord current in a.activeMoves)
+				{
+					validActi.Add(current);
+				}
+
+				//Add the contents of b which are not already in a to each array
+				foreach (game.coord current in b.passiveMoves)
+				{
+					if (!(a.passiveMoves.Contains(current)))
+					{
+						validPass.Add(current);
+					}
+				}
+				foreach (game.coord current in b.activeMoves)
+				{
+					if (!(a.activeMoves.Contains(current)))
+					{
+						validActi.Add(current);
+					}
+				}
+
+				//Set the arrays
+				activeMoves = validActi.ToArray();
+				passiveMoves = validPass.ToArray();
+			}
+		}
 
 		private game.coord piecePos;
 		
 		//Return a list of all the coordinates that a single piece could move to, including taking
-		public game.coord[] getAllMoves()
+		public moveset getAllMoves(game.coord target)
 		{
+			piecePos = target;
 			//The list containing valid moves that the piece can make
 			List<game.coord> valid = new List<game.coord>();
+			List<game.coord> validTaking = new List<game.coord>();
 			//The array to contain the "enemy" pieces to simplify code
 			char[] enemies;
 			//The current piece's character (ie. type)
@@ -163,11 +220,13 @@ namespace chess
 				if (enemies.Contains(left.getPiece(toAnalyze)))
 				{
 					valid.Add(left);
+					validTaking.Add(left);
 				}
 				//Right
 				if (enemies.Contains(right.getPiece(toAnalyze)))
 				{
 					valid.Add(right);
+					validTaking.Add(left);
 				}
 			}
 			else
@@ -175,7 +234,7 @@ namespace chess
 			switch (Char.ToLower(pieceChar)){
 				case game.blackPieces[1]:
 					//Rooks
-					break;
+					return straightMoves(piecePos);
 				case game.blackPieces[2]:
 					//Knights
 					//Define the array of moves knights can make
@@ -199,21 +258,42 @@ namespace chess
 						if (current.getPiece(toAnalyze) == ' ' || enemies.Contains(current.getPiece(toAnalyze)))
 						{
 							valid.Add(current);
+							validTaking.Add(current);
 						}
 					}
-					break;
+					return new moveset(piecePos, valid.ToArray(), validTaking.ToArray());
 				case game.blackPieces[3]:
 					//Bishops
-					break;
+					return diagonalMoves(piecePos);
 				case game.blackPieces[4]:
 					//Queens
-					break;
+					return new moveset(diagonalMoves(piecePos), straightMoves(piecePos));
 				case game.blackPieces[5]:
 					//Kings
-					break;
+					for (int i=-1; i<2; i++)
+					{
+						for (int o =-1; o<2; o++)
+						{
+							if (toAnalyze.board[i,o] == ' ' || enemies.Contains(toAnalyze.board[i,o]))
+							{
+								valid.Add(new game.coord(i,o));
+								validTaking.Add(new game.coord(i,o));
+							}
+						}
+					}
+					return new moveset(piecePos, valid.ToArray(), validTaking.ToArray());
 				}
 			}
-			return valid.ToArray();
+		}
+
+		private moveset straightMoves(game.coord target)
+		{
+
+		}
+
+		private moveset diagonalMoves(game.coord target)
+		{
+
 		}
 	}
 }
